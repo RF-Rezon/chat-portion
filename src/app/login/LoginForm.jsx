@@ -1,6 +1,5 @@
 "use client"
 
-
 import useAuth from "@/Hooks/useAuth";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";

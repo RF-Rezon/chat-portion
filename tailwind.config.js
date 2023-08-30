@@ -20,18 +20,5 @@ module.exports = {
   plugins: [require("daisyui"), require('tailwind-scrollbar')],
   daisyui: {
     themes: ["light"],
-  },
-
-  experimental: {
-    runtime: 'edge'
-  },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        dns: false,
-      };
-    }
-    return config;
-  },
+  }
 };

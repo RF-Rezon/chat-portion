@@ -1,14 +1,13 @@
 "use client";
 
-import useAuth from "@/Hooks/useAuth";
+import AuthContext from "@/contexts/AuthContext";
 import { db, storage } from "@/firebase/Firebase.config";
 import { updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
-
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { startTransition } from "react";
+import { startTransition, useContext } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 
@@ -16,12 +15,10 @@ const SignUpForm = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    getValues,
-    setValue,
+    formState: { errors }
   } = useForm();
 
-  const { createUser, profileUpdate } = useAuth();
+  const { createUser, profileUpdate } = useContext(AuthContext);
 
   const search = useSearchParams();
   const from = search.get("redirectUrl") || "/";
@@ -30,40 +27,52 @@ const SignUpForm = () => {
   const onSubmit = async (data, event) => {
     const { name, email, password, photoURL } = data;
     const toastId = toast.loading("Loading...");
+
     try {
       const res = await createUser(email, password);
       const storageRef = ref(storage, name);
 
-      const uploadTask = uploadBytesResumable(storageRef, photoURL);
+      const response = await fetch(photoURL);
+      const blob = await response.blob();
+      const uploadTask = uploadBytesResumable(storageRef, blob);
 
       uploadTask.on(
-
-        (error) => {
-          console.error(error)
+        "state_changed",
+        (snapshot) => {
+          // You can track the upload progress here if needed
         },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async(downloadURL) => {
-            await updateProfile(res.user, {
-              displayName: name,
-              photoURL: downloadURL, 
-            });
-            await setDoc(doc(db, "users", res.user.uid), {
+        (error) => {
+          console.error(error);
+          toast.dismiss(toastId);
+          toast.error("Error uploading photo");
+        },
+        async () => {
+          try {
+            const downloadURL = await getDownloadURL(uploadTask?.snapshot.ref);
+            await setDoc(doc(db, "users", res?.user.uid), {
               uid: res.user.uid,
               displayName: name,
               email,
-              photoURL:downloadURL,
-            })
-            await setDoc(doc(db, 'userChats', res.user.uid), {});
-          });
+              photoURL: downloadURL,
+            });
+            await setDoc(doc(db, "userChats", res?.user.uid), {});
+            await updateProfile(res.user, {
+              displayName: name,
+              photoURL: downloadURL,
+            });
+
+            startTransition(() => {
+              refresh();
+              replace(from);
+              toast.dismiss(toastId);
+              toast.success("User signed in successfully");
+            });
+          } catch (error) {
+            toast.dismiss(toastId);
+            toast.error("Error updating user profile");
+          }
         }
       );
-     
-      startTransition(() => {
-        refresh();
-        replace(from);
-        toast.dismiss(toastId);
-        toast.success("User signed in successfully");
-      });
     } catch (error) {
       toast.dismiss(toastId);
       toast.error(error.message || "User not signed in");

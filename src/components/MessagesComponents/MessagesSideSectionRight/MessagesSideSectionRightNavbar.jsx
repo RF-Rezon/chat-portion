@@ -4,6 +4,7 @@ import { useContext } from "react";
 
 const MessagesSideSectionRightNavbar = () => {
   const {data} = useContext(ChatContext);
+  // console.log(data)
   return (
     <>
       <div className="bg-[#3c3b3b] w-full h-[70px] space-y-1">

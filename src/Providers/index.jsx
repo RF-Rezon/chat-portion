@@ -1,10 +1,8 @@
-"use client"
-import React from 'react';
-import AuthProvider from './AuthProvider';
+"use client";
+import AuthProvider from "./AuthProvider";
 
-const Providers = ({children}) => {
-    return <AuthProvider>{children}</AuthProvider>
-  
+const Providers = ({ children }) => {
+  return <AuthProvider>{children}</AuthProvider>;
 };
 
 export default Providers;
