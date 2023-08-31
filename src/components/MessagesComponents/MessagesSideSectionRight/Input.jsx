@@ -6,6 +6,7 @@ import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import moment from 'moment';
 import { useContext, useState } from "react";
+import { toast } from "react-hot-toast";
 import { HiOutlineInboxIn } from "react-icons/hi";
 import { v4 as uuid } from "uuid";
 
@@ -19,8 +20,11 @@ const dateToFormat = new Date(); // Replace this with your date
 const formattedDate = moment(dateToFormat).format('MMMM D, YYYY [at] h:mm A [UTC]Z');
 
   const handleSend = async()=>{  
+    if(text.length < 1){
+      return;
+    }
     if(img){
-
+    
     //   const storageRef = ref(storage);
       const storageRef = ref(storage, uuid());
       // const response = await fetch(img);

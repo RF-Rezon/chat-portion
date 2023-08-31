@@ -27,6 +27,7 @@ const SignUpForm = () => {
   const onSubmit = async (data, event) => {
     const { name, email, password, photoURL } = data;
     const toastId = toast.loading("Loading...");
+    console.log(photoURL);
 
     try {
       const res = await createUser(email, password);
